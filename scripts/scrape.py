@@ -230,6 +230,8 @@ def main():
     # Default output is a CSV file (opens in Excel / Google Sheets). Use --json (or a .json --out path) for JSON.
     as_json = a.json or (a.out and a.out.lower().endswith(".json"))
     out = a.out or f"results-{job_id[:8]}.{'json' if as_json else 'csv'}"
+    output_dir = os.path.dirname(os.path.abspath(out))
+    os.makedirs(output_dir, exist_ok=True)
     if as_json:
         with open(out, "w") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)

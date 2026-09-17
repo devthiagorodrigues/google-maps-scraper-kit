@@ -4,6 +4,7 @@
 # Scrape outputs (may contain personal data — never commit)
 *.csv
 results-*.json
+results/
 out/
 output/
 gmaps-output/

@@ -1,7 +1,7 @@
 # SETUP — Google Maps Scraper Kit
 
 This guide sets up the whole system **on your computer** from scratch. It's written so that a person
-*or* Claude can follow it exactly. Total time: ~5 minutes (most of it is Docker pulling the image).
+*or* Codex can follow it exactly. Total time: ~5 minutes (most of it is Docker pulling the image).
 
 ---
 
@@ -12,7 +12,7 @@ Install these first (one-time):
 | Tool | Why | Get it |
 |---|---|---|
 | **Docker Desktop** | runs the scraper container | https://www.docker.com/products/docker-desktop |
-| **Claude Code** *(optional but recommended)* | lets Claude drive the scraper for you | https://claude.com/claude-code |
+| **Codex CLI or IDE extension** *(optional but recommended)* | lets Codex drive the scraper for you | https://developers.openai.com/codex/ |
 | **git** *(optional)* | only if you'll push this to GitHub | https://git-scm.com |
 
 Verify Docker is running:
@@ -73,7 +73,7 @@ You can also open the built-in UI and API docs in a browser:
 
 ---
 
-## 3. Run your first scrape (without Claude)
+## 3. Run your first scrape (without Codex)
 
 Use the included script. Arguments: `"<keyword>" <lat> <lon> [depth]`
 
@@ -102,30 +102,37 @@ python3 scripts/scrape.py --keywords-file examples/queries.example.txt --city "D
 
 ---
 
-## 4. Use it with Claude (the autopilot way) 🤖
+## 4. Use it with Codex (the autopilot way) 🤖
 
 This is the point of the kit. Two parts make it work:
 
-1. **[CLAUDE.md](CLAUDE.md)** — auto-loaded when you open this folder in Claude Code. It tells Claude
-   what this project is and the key rules.
-2. **[.claude/skills/google-maps-scraper/SKILL.md](.claude/skills/google-maps-scraper/SKILL.md)** — a
-   **skill** Claude loads on demand. It teaches Claude the exact API flow + best practices.
+1. **[AGENTS.md](AGENTS.md)** — auto-loaded when you open this folder in Codex. It contains the durable
+   project rules, validation commands, and file conventions.
+2. **[.agents/skills/google-maps-scraper/SKILL.md](.agents/skills/google-maps-scraper/SKILL.md)** — a
+   repository **skill** Codex loads on demand. It contains the exact API flow, defaults, safety rules,
+   and troubleshooting guidance.
 
-### How to connect it to Claude
-There's nothing to "connect" — the scraper is a local HTTP API at `http://localhost:8080`, and Claude
+### How to connect it to Codex
+There's nothing to "connect" — the scraper is a local HTTP API at `http://localhost:8080`, and Codex
 calls it with its normal `curl`/Bash ability. Just:
 
 ```bash
 cd google-maps-scraper-kit
-claude            # start Claude Code inside this folder
+codex             # start Codex inside this folder
 ```
 
 Then talk to it naturally:
 > "Make sure the scraper is running, then scrape **dentists in Denver CO**, depth 10, and give me a table of name, phone, website."
 
-Claude will: check the container is up (start it if not) → build the correct job (with the required
-`max_time`, `lat`, `lon`) → poll in the background → download → hand you clean rows. It follows the
+Codex will: check the container is up (start it if not) → build the correct job (with the required
+`max_time`, `lat`, `lon`) → poll until completion → download → hand you clean rows. It follows the
 safety/best-practice rules in the skill automatically.
+
+You can also invoke the workflow explicitly:
+
+```text
+$google-maps-scraper find 50 dental clinics in Embu das Artes, include emails, and save a CSV
+```
 
 > ℹ️ **Advanced (optional):** prefer a Model Context Protocol server instead of curl? You can wrap the
 > API as an MCP tool, but it's unnecessary for a local single-user setup — the skill + local API is
@@ -133,18 +140,7 @@ safety/best-practice rules in the skill automatically.
 
 ---
 
-### Slash-command shortcuts
-Inside Claude Code you can also use these commands (type `/` to see them):
-
-| Command | What it does |
-|---|---|
-| `/scrape <business> in <city, ST> [depth]` | Run a scrape, get a clean table |
-| `/scrape-batch <keywords-file> [--city "City, ST"]` | Scrape many queries in one job |
-| `/scrape-setup` | Start the scraper + health check |
-| `/scrape-jobs [list \| delete <id>]` | List or delete jobs |
-
-…or just ask in plain English: *"scrape gyms in Miami with phone numbers."* (The scraper's commands and
-`localhost` calls are pre-approved in `.claude/settings.json`, so Claude won't prompt for each one.)
+The original `.claude/` directory is still present for Claude Code users, but Codex does not depend on it.
 
 ---
 
@@ -181,7 +177,8 @@ curl -X DELETE http://localhost:8080/api/v1/jobs/<job-id>
 The full rules live in the skill, but the essentials:
 - **Always** send `max_time` (seconds) and `lat`/`lon` (strings).
 - Start with **low `depth`** (5) and **one job at a time**. Raise only when needed.
-- Turn on **email extraction** only when you need emails — it's much slower.
+- Email extraction is on by default. Use `--no-email` for a deliberately faster run.
 - For big jobs, add **proxies** (the scraper has built-in rotation) to avoid IP blocks.
-- Scraped **phones/emails are personal data** — comply with GDPR/CCPA/CAN-SPAM, and respect Google's ToS.
+- Scraped **phones/emails are personal data** — comply with applicable rules such as LGPD, GDPR,
+  CCPA, and marketing/opt-out requirements, and respect Google's ToS.
 - Never commit result files (they're git-ignored for you).
