@@ -9,6 +9,8 @@ services:
     # The published image is linux/amd64. On Apple Silicon (M1/M2/M3) it runs under
     # emulation; if it won't start, UNCOMMENT the 'platform' line below.
     image: gosom/google-maps-scraper:v1.15.0
+    environment:
+      PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev
     # platform: linux/amd64
     container_name: gmaps-scraper
     restart: unless-stopped
